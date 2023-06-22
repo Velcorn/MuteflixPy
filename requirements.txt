@@ -1,0 +1,16 @@
+altgraph==0.17.3
+comtypes==1.2.0
+mss==9.0.1
+numpy==1.25.0
+opencv-python==4.7.0.72
+packaging==23.1
+pefile==2023.2.7
+Pillow==9.5.0
+psutil==5.9.5
+pycaw==20230407
+pyinstaller==5.12.0
+pyinstaller-hooks-contrib==2023.3
+pytesseract==0.3.10
+pywin32==306
+pywin32-ctypes==0.2.1
+tk==0.1.0
