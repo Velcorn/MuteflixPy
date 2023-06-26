@@ -1,6 +1,5 @@
-import cv2  # for debugging purposes
+import cv2
 import numpy as np
-import pytesseract
 import tkinter as tk
 from mss import mss
 from time import sleep
