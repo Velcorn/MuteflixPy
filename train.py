@@ -119,6 +119,6 @@ for epoch in range(num_epochs):
     print(f"Epoch [{epoch + 1}/{num_epochs}] Validation Loss: {val_loss:.4f} Accuracy: {accuracy:.2f}%")
 
 # Save the model
-torch.save(model.state_dict(), 'model.pth')
+torch.save(model.state_dict(), 'model/model.pth')
 
 print("Training finished!")

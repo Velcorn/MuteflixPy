@@ -141,8 +141,8 @@ def run_script():
     # Load ML model
     model = models.resnet50()
     num_features = model.fc.in_features
-    model.fc = nn.Linear(num_features, 2)  # Binary classification, 2 output classes
-    model.load_state_dict(torch.load('model.pth'))
+    model.fc = nn.Linear(num_features, 2)
+    model.load_state_dict(torch.load('model/model.pth'))
     model.eval()
     # Initialize loop
     while is_running:
@@ -175,6 +175,7 @@ def run_script():
                 outputs = model(img)
                 _, preds = torch.max(outputs, 1)
             ad_detected = preds.item() == 1
+        # If ad is detected, mute if not already muted
         if ad_detected:
             if not muted:
                 mute()
