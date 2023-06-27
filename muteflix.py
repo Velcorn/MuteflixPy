@@ -1,11 +1,15 @@
 import cv2
 import numpy as np
 import pytesseract
-import tkinter as tk
-from tkinter import ttk
-from mss import mss
-from time import sleep
 import threading
+import tkinter as tk
+import torch
+import torch.nn as nn
+from mss import mss
+from PIL import Image
+from time import sleep
+from tkinter import ttk
+from torchvision import transforms, models
 
 # Handle different OSes
 from sys import platform
@@ -134,21 +138,43 @@ def run_script_wrapper():
 
 # Main script loop
 def run_script():
+    # Load ML model
+    model = models.resnet50()
+    num_features = model.fc.in_features
+    model.fc = nn.Linear(num_features, 2)  # Binary classification, 2 output classes
+    model.load_state_dict(torch.load('model.pth'))
+    model.eval()
+    # Initialize loop
     while is_running:
         # Initialize screen capture
         sct = mss()
         # Take screenshot of the current platform's bounding box
         bbox = bounding_boxes[current_platform]
         img = np.array(sct.grab(bbox))
-        # Binarize the image so only white text on black background remains
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
-        # Use Tesseract to read text from image
-        text = pytesseract.image_to_string(img, config='--psm 3')
-        print(text)
-        # Detects ads and mute/unmute accordingly
-        ad_detected = 'catch' in text.lower() if current_platform == 'twitch' else \
-            any(w in text.lower() for w in ['ad', '|'])
+        if current_platform == 'twitch':
+            # Binarize the image so only white text on black background remains
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            img = cv2.threshold(img, 0, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)[1]
+            # Use Tesseract to read text from image
+            text = pytesseract.image_to_string(img, config='--psm 7')
+            # Detects ads and mute/unmute accordingly
+            ad_detected = 'catch' in text.lower()
+        else:
+            # Use ML model to predict if ad is playing
+            img = cv2.resize(img, (224, 224))
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # Convert BGR to RGB
+            img = Image.fromarray(img)
+            transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+            ])
+            img = transform(img)
+            img = img.unsqueeze(0)
+            with torch.no_grad():
+                outputs = model(img)
+                _, preds = torch.max(outputs, 1)
+            ad_detected = preds.item() == 1
         if ad_detected:
             if not muted:
                 mute()

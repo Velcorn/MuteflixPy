@@ -17,14 +17,14 @@ bbox['width'] = int(bbox['width'] * ratios[0])
 bbox['height'] = int(bbox['height'] * ratios[1])
 
 sct = mss()
-counter = 0
+counter = 14000
 while True:
-    if counter == 10000:
+    if counter == 100000:
         break
     # Grab the image
     img = np.array(sct.grab(bbox))
     # Save the image
-    cv2.imwrite(f'images/{counter.zfill(5)}.jpg', img)
+    cv2.imwrite(f'images/{str(counter).zfill(5)}.jpg', img)
     counter += 1
-    # Sleep 1 second
-    sleep(1)
+    # Sleep .2 seconds
+    sleep(.2)
